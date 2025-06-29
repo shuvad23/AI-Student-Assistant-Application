@@ -6,11 +6,25 @@ from langgraph.prebuilt import create_react_agent
 import base64
 import io
 from PIL import Image
-from langchain.chains import RetrievalQA
+from langchain.chains import RetrievalQA,LLMChain
+from langchain.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 import os
 load_dotenv()
-def generate_text(user_input):
+
+
+
+
+def generate_text(user_input,_chat_history_text):
+    # Directly format the full prompt with user question
+    user_input = f"""
+    You are NeuroNote AI — a friendly, helpful, and smart student assistant 🤖📚.
+    You're designed to help students with learning, note-taking, and staying organized.
+    respond like a friendly assistant.
+    This is the conversation so far:
+    {_chat_history_text}
+    Answer the following user question: {user_input}
+    """
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash",
         google_api_key=os.getenv("GEMINI_API_KEY"),
@@ -18,7 +32,6 @@ def generate_text(user_input):
     )
     tools = []
     agent_execute = create_react_agent(model=llm,tools=tools)
-
 
     response_result = ''
     for chunk in agent_execute.stream({"messages": [HumanMessage(content=user_input)]}):
