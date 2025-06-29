@@ -1,0 +1,47 @@
+# Core requirements with flexible versions
+streamlit>=1.27
+torch>=2.0
+transformers>=4.30
+sentence-transformers>=2.2
+pillow>=9.0
+pytesseract
+scikit-learn>=1.0
+numpy>=1.21
+
+# Image processing
+opencv-python-headless
+
+# Deployment
+gunicorn
+python-dotenv
+
+# Optional packages (commented out by default)
+# pix2tex  # For LaTeX equation recognition
+# matplotlib  # For diagram visualization
+# chempy  # For chemistry computations
+# sympy  # For symbolic mathematics
+
+langchain>=0.1.0
+langgraph>=0.0.13
+google-generativeai>=0.3.0
+transformers>=4.40.0
+sentence-transformers>=2.7.0
+pillow>=10.2.0
+pytesseract>=0.3.10
+python-dotenv>=1.0.0
+opencv-python-headless>=4.8.0
+langchain-google-genai>=0.0.4  # New package
+langchain_community
+
+streamlit>=1.33
+pillow>=10.2.0
+transformers>=4.40.0
+python-dotenv>=1.0.0
+google-generativeai>=0.3.0
+langchain-google-genai>=0.0.4
+pytesseract>=0.3.10
+sentencepiece>=0.2.0  # Critical addition
+accelerate>=0.27.0  # For better performance
+faiss-cpu
+pypdf
+tiktoken
