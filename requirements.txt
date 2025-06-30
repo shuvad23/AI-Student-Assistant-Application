@@ -45,3 +45,5 @@ accelerate>=0.27.0  # For better performance
 faiss-cpu
 pypdf
 tiktoken
+google-generativeai
+PyMuPDF
