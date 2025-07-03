@@ -42,7 +42,63 @@ if __name__ == "__main__":
             st.success(f"✅ PDF processed and indexed {len(uploaded_pdfs)} PDF(s)")
             
         # Image input
-        uploaded_image = st.file_uploader("Optional: Upload image (JPG/PNG)", type=["jpg", "jpeg", "png"])
+        uploaded_image = st.file_uploader("Upload image (JPG/PNG)", type=["jpg", "jpeg", "png"])
+        agent_types = [
+                    "🧠 Super Conscious Agent (All Subjects Expert)",
+
+                    # all core subjects
+                    "📘 Math Tutor Agent",
+                    "🔢 Algebra & Calculus Assistant",
+                    "📐 Geometry & Trigonometry Assistant",
+                    "🧮 Statistics & Probability Helper",
+                    "🔬 Science Explainer Agent",
+                    "🧲 Physics Problem Solver",
+                    "🧪 Chemistry Assistant",
+                    "🧬 Biology Helper",
+                    "📖 Literature & English Agent",
+                    "📝 Essay Writing Coach",
+                    "🧠 Psychology Study Agent",
+                    "🌍 Geography Guide",
+                    "📚 History Fact Checker",
+                    "⚖️ Civics & Social Studies Agent",
+                    "📊 Economics & Business Analyst",
+                    "💻 Programming Mentor (Python, C++, Java, etc.)",
+                    "🗣️ Language Learning Agent (French, Spanish, etc.)",
+                    "🎨 Art & Design Advisor",
+                    "🎼 Music Theory Tutor",
+                    "🧭 Exam & Revision Planner",
+                    
+                    # Engineering Section
+                    "⚙️ Mechanical Engineering Assistant",
+                    "🔌 Electrical Engineering Helper",
+                    "🏗️ Civil Engineering Guide",
+                    "🖥️ Computer Engineering Mentor",
+                    "🧪 Chemical Engineering Tutor",
+                    "📡 Electronics & Communication Engineer Agent",
+                    "🤖 Robotics & Automation Specialist",
+                    "📐 Structural Engineering Consultant",
+                    "🌐 Environmental Engineering Advisor",
+                    "🚀 Aerospace Engineering Assistant",
+
+                    # Computer Science Section
+                    "💻 Computer Science Researcher",
+                    "🖥️ Software Development Mentor",
+                    "🧑‍💻 Algorithms & Data Structures Tutor",
+                    "🔐 Cybersecurity Advisor",
+                    "☁️ Cloud Computing Assistant",
+                    "🤖 Artificial Intelligence Specialist",
+                    "📊 Data Science Analyst",
+                    "🌐 Web Development Guide",
+                    "📱 Mobile App Development Tutor",
+                    "🧬 Machine Learning Engineer",
+                    "🛠️ DevOps & Automation Consultant",
+                    "🔎 Computer Vision Expert",
+                    "🎮 Game Development Mentor"
+                    
+                ]
+
+        # subject select your agent type:
+        agent = st.selectbox("Select Your Agent Type:",agent_types)
 
     # display chat history ---
     for msg in st.session_state.chat_history:
@@ -54,12 +110,13 @@ if __name__ == "__main__":
                 st.markdown(msg.content)
 
 
+
     user_input = st.chat_input("Type your messages....")
     if user_input:
         st.session_state.chat_history.append(HumanMessage(content=user_input))
         with st.chat_message("user"):
             st.markdown(user_input)
-        
+
         with st.chat_message('assistant'):
             with st.spinner("Thinking.."):
                 try:
@@ -70,7 +127,7 @@ if __name__ == "__main__":
                         st.write("🖼️ Based on your uploaded image:")
                         response = generate_image_response(user_input, uploaded_image)
                     else:
-                        response = generate_text(user_input,st.session_state.chat_history)
+                        response = generate_text(user_input,st.session_state.chat_history,agent)
 
                     st.markdown(response)
                     st.session_state.chat_history.append(AIMessage(content=response))
