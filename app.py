@@ -9,6 +9,7 @@ from PIL import Image
 from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 import os
+import validators
 
 from create_vectorstore import save_vectorDatabase,load_vectorDatabase,process_add_and_pdfs_to_vectorDB
 from rag_response import get_rag_response
@@ -100,6 +101,13 @@ if __name__ == "__main__":
         # subject select your agent type:
         agent = st.selectbox("Select Your Agent Type:",agent_types)
 
+        web_link = st.text_input("Enter your reference link:")
+        if web_link:
+            if validators.url(web_link):
+                st.success(f"Valid URL received: {web_link}")
+                # You can now process the URL, scrape it, summarize it, etc.
+            else:
+                st.error("❌ This is not a valid URL. Please enter a proper web link.")
     # display chat history ---
     for msg in st.session_state.chat_history:
         if isinstance(msg,HumanMessage):
@@ -127,7 +135,10 @@ if __name__ == "__main__":
                         st.write("🖼️ Based on your uploaded image:")
                         response = generate_image_response(user_input, uploaded_image)
                     else:
-                        response = generate_text(user_input,st.session_state.chat_history,agent)
+                        if web_link:
+                            response = generate_text(user_input,st.session_state.chat_history,agent,web_link)
+                        else:
+                            response = generate_text(user_input,st.session_state.chat_history,agent)
 
                     st.markdown(response)
                     st.session_state.chat_history.append(AIMessage(content=response))

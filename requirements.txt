@@ -47,3 +47,5 @@ pypdf
 tiktoken
 google-generativeai
 PyMuPDF
+arxiv
+validators

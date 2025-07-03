@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import os
 import requests
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.tools import ArxivQueryRun
+from langchain_community.utilities.arxiv import ArxivAPIWrapper
 load_dotenv()
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
@@ -14,9 +16,10 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 def get_tools_for_agent(agent_type):
     tavily_search = TavilySearchResults(k=3)
+    arxiv_search = ArxivQueryRun(api_wrapper=ArxivAPIWrapper())
     # Super agent gets everything
     if agent_type == "🧠 Super Conscious Agent (All Subjects Expert)":
-        return [tavily_search]
+        return [tavily_search,arxiv_search]
 
     # Core Subjects
     if agent_type in [
@@ -63,7 +66,7 @@ def get_tools_for_agent(agent_type):
         "🔎 Computer Vision Expert",
         "🎮 Game Development Mentor"
     ]:
-        return [tavily_search]
+        return [tavily_search,arxiv_search]
 
     # Optional: add for these if needed
     if agent_type in [
@@ -79,7 +82,7 @@ def get_tools_for_agent(agent_type):
 
 
 
-def generate_text(user_input,_chat_history_text,agent_type):
+def generate_text(user_input,_chat_history_text,agent_type,link=None):
     # Directly format the full prompt with user question
     user_input_prompt = f"""
                     You are NeuroNote AI — a smart, friendly, and expert multi-subject assistant 🤖📚, 
@@ -103,7 +106,11 @@ def generate_text(user_input,_chat_history_text,agent_type):
                     - Encouraging, friendly, and non-judgmental
                     - Gives examples where helpful
                     - Explains complex topics in a simple way
-
+                    ### reference link:
+                        - {link}
+                        - Note: - If a reliable reference link is provided in the input (such as a website or article), use the content from that source to answer the question.
+                                - Be sure to mention the title of the webpage or article in your answer for better context.
+                                - If no reference is provided or the query does not directly match existing information, use your own knowledge and reasoning to generate a helpful, accurate, and student-friendly response.
                     ### Conversation So Far:
                     {_chat_history_text}
 
