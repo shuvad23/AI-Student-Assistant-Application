@@ -6,6 +6,7 @@ from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 import os
 import requests
+from bs4 import BeautifulSoup
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.tools import ArxivQueryRun
 from langchain_community.utilities.arxiv import ArxivAPIWrapper
@@ -80,9 +81,9 @@ def get_tools_for_agent(agent_type):
     # Default (no tool needed)
     return []
 
+def generate_text(user_input,_chat_history_text,agent_type):
 
 
-def generate_text(user_input,_chat_history_text,agent_type,link=None):
     # Directly format the full prompt with user question
     user_input_prompt = f"""
                     You are NeuroNote AI — a smart, friendly, and expert multi-subject assistant 🤖📚, 
@@ -101,16 +102,22 @@ def generate_text(user_input,_chat_history_text,agent_type,link=None):
                     ### Role:
                     You are currently acting as the **{agent_type}**, so respond with knowledge, tone, 
                     and examples suitable for that role. Be clear, concise, and student-friendly.
+                    and maybe drop a clever joke here and there. You're that cool teacher everyone loves.
 
                     ### Personality:
                     - Encouraging, friendly, and non-judgmental
                     - Gives examples where helpful
                     - Explains complex topics in a simple way
-                    ### reference link:
-                        - {link}
-                        - Note: - If a reliable reference link is provided in the input (such as a website or article), use the content from that source to answer the question.
-                                - Be sure to mention the title of the webpage or article in your answer for better context.
+                    ### reference link:(if available):
+                        Use this content in your response if it's relevant.
+                        - Note: 
+                                - If a reliable reference link is provided in the input (such as a website or article), use the content from that source to answer the question.
+                                - if you not found user query on this provided link or user query and provided link article are not match then reply the context not match for your query
+                                - Be sure to mention the title of the webpage or article in your answer for better context. 
                                 - If no reference is provided or the query does not directly match existing information, use your own knowledge and reasoning to generate a helpful, accurate, and student-friendly response.
+                                
+                                
+                                
                     ### Conversation So Far:
                     {_chat_history_text}
 
@@ -121,8 +128,10 @@ def generate_text(user_input,_chat_history_text,agent_type,link=None):
                     Respond in a way that fits your selected agent type (**{agent_type}**), while being helpful, accurate, and easy to understand. Use bullet points, math formatting, or code blocks when appropriate.
                         - If the question requires external knowledge (like real-time search, news, or facts),
                           use the available tools like `tavily_search` instead of answering from memory.
+                    ### reference link(if available):
+                        - give some top most source link for better research on this user query (highlight this link)
                     """
-
+    
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash",
         google_api_key=os.getenv("GEMINI_API_KEY"),

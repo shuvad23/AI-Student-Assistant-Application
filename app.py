@@ -15,6 +15,7 @@ from create_vectorstore import save_vectorDatabase,load_vectorDatabase,process_a
 from rag_response import get_rag_response
 from image_response import generate_image_response
 from generate_text_response import generate_text
+from web_search import fetch_webpage_content,model_feedback
 
 load_dotenv()
 
@@ -101,13 +102,33 @@ if __name__ == "__main__":
         # subject select your agent type:
         agent = st.selectbox("Select Your Agent Type:",agent_types)
 
+
+
+
+        # searching by web-link 
+        # Initialize session state
+        if "active_button" not in st.session_state:
+            st.session_state.active_button = None
         web_link = st.text_input("Enter your reference link:")
-        if web_link:
-            if validators.url(web_link):
-                st.success(f"Valid URL received: {web_link}")
-                # You can now process the URL, scrape it, summarize it, etc.
-            else:
-                st.error("❌ This is not a valid URL. Please enter a proper web link.")
+        active,inactive = st.columns(2)
+
+        page_title, page_text = ("None", "")
+        with active:
+            if st.button("Active"):
+                if web_link and validators.url(web_link):
+                    title, text = fetch_webpage_content(web_link)
+                    if text:
+                        st.session_state.active_button = "on"
+                        st.session_state.page_title = title
+                        st.session_state.page_text = text
+                        st.success("Link successfully connected")
+                else:
+                    st.error("❌ Invalid URL.")
+        with inactive:
+            if st.button("Disconnect"):
+                st.session_state.active_button = None
+                st.success("Link Disconnect")
+        
     # display chat history ---
     for msg in st.session_state.chat_history:
         if isinstance(msg,HumanMessage):
@@ -128,17 +149,21 @@ if __name__ == "__main__":
         with st.chat_message('assistant'):
             with st.spinner("Thinking.."):
                 try:
-                    if st.session_state.vectorstore and uploaded_pdfs:
+                    if st.session_state.active_button == "on":
+                        st.write("📄 Based on your provided web-link:")
+                        response = model_feedback(
+                                                page_text=st.session_state.get("page_text", ""),
+                                                page_title=st.session_state.get("page_title", "Unknown"),
+                                                user_input=user_input
+                                            )
+                    elif st.session_state.vectorstore and uploaded_pdfs:
                         st.write("📄 Based on your uploaded PDF(s):")
                         response = get_rag_response(user_input, st.session_state.vectorstore)
                     elif uploaded_image:
                         st.write("🖼️ Based on your uploaded image:")
                         response = generate_image_response(user_input, uploaded_image)
                     else:
-                        if web_link:
-                            response = generate_text(user_input,st.session_state.chat_history,agent,web_link)
-                        else:
-                            response = generate_text(user_input,st.session_state.chat_history,agent)
+                        response = generate_text(user_input,st.session_state.chat_history,agent)
 
                     st.markdown(response)
                     st.session_state.chat_history.append(AIMessage(content=response))
