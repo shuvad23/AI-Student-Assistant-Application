@@ -10,14 +10,14 @@ from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 import os
 import validators
-
 from create_vectorstore import save_vectorDatabase,load_vectorDatabase,process_add_and_pdfs_to_vectorDB
 from rag_response import get_rag_response
 from image_response import generate_image_response
 from generate_text_response import generate_text
 from web_search import fetch_webpage_content,model_feedback
-
 load_dotenv()
+
+
 
 if __name__ == "__main__":
     # set streamlit UI
@@ -57,6 +57,7 @@ if __name__ == "__main__":
                     "🧲 Physics Problem Solver",
                     "🧪 Chemistry Assistant",
                     "🧬 Biology Helper",
+                    "🧪 Molecular Learning Assistant",
                     "📖 Literature & English Agent",
                     "📝 Essay Writing Coach",
                     "🧠 Psychology Study Agent",

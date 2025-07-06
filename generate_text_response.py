@@ -10,9 +10,16 @@ from bs4 import BeautifulSoup
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.tools import ArxivQueryRun
 from langchain_community.utilities.arxiv import ArxivAPIWrapper
+
+from multi_agents_api import github_top_repos,stackoverflow_search,search_protein_info,get_gene_info,get_global_covid_stats,openfda_drug_info,wolframalpha_query
 load_dotenv()
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+
+
+
+
+
 
 
 def get_tools_for_agent(agent_type):
@@ -20,14 +27,11 @@ def get_tools_for_agent(agent_type):
     arxiv_search = ArxivQueryRun(api_wrapper=ArxivAPIWrapper())
     # Super agent gets everything
     if agent_type == "🧠 Super Conscious Agent (All Subjects Expert)":
-        return [tavily_search,arxiv_search]
+        return [tavily_search,arxiv_search,github_top_repos]
 
     # Core Subjects
     if agent_type in [
-        "🔬 Science Explainer Agent",
-        "🧲 Physics Problem Solver",
         "🧪 Chemistry Assistant",
-        "🧬 Biology Helper",
         "📊 Economics & Business Analyst",
         "🧠 Psychology Study Agent",
         "📚 History Fact Checker",
@@ -35,7 +39,11 @@ def get_tools_for_agent(agent_type):
         "🌍 Geography Guide"
     ]:
         return [tavily_search]
-
+    
+    # For medical related topics
+    if agent_type in ["🧬 Biology Helper","🧪 Molecular Learning Assistant"]:
+        return [search_protein_info,get_gene_info,get_global_covid_stats,openfda_drug_info,tavily_search]
+    
     # Engineering Section
     if agent_type in [
         "⚙️ Mechanical Engineering Assistant",
@@ -54,8 +62,6 @@ def get_tools_for_agent(agent_type):
     # Computer Science Section
     if agent_type in [
         "💻 Computer Science Researcher",
-        "🖥️ Software Development Mentor",
-        "🧑‍💻 Algorithms & Data Structures Tutor",
         "🔐 Cybersecurity Advisor",
         "☁️ Cloud Computing Assistant",
         "🤖 Artificial Intelligence Specialist",
@@ -68,6 +74,14 @@ def get_tools_for_agent(agent_type):
         "🎮 Game Development Mentor"
     ]:
         return [tavily_search,arxiv_search]
+    if agent_type in ["🧑‍💻 Algorithms & Data Structures Tutor",
+                      "🖥️ Software Development Mentor"]:
+        return [github_top_repos,stackoverflow_search]
+    
+    # science and physics section
+    if agent_type in ["🔬 Science Explainer Agent",
+                    "🧲 Physics Problem Solver",]:
+        return [wolframalpha_query,tavily_search]
 
     # Optional: add for these if needed
     if agent_type in [
@@ -76,7 +90,7 @@ def get_tools_for_agent(agent_type):
         "📐 Geometry & Trigonometry Assistant",
         "🧮 Statistics & Probability Helper"
     ]:
-        return [tavily_search]  # Or replace with solve_math_expression if you want real math solving
+        return [wolframalpha_query,tavily_search]  # Or replace with solve_math_expression if you want real math solving
 
     # Default (no tool needed)
     return []
@@ -107,15 +121,7 @@ def generate_text(user_input,_chat_history_text,agent_type):
                     ### Personality:
                     - Encouraging, friendly, and non-judgmental
                     - Gives examples where helpful
-                    - Explains complex topics in a simple way
-                    ### reference link:(if available):
-                        Use this content in your response if it's relevant.
-                        - Note: 
-                                - If a reliable reference link is provided in the input (such as a website or article), use the content from that source to answer the question.
-                                - if you not found user query on this provided link or user query and provided link article are not match then reply the context not match for your query
-                                - Be sure to mention the title of the webpage or article in your answer for better context. 
-                                - If no reference is provided or the query does not directly match existing information, use your own knowledge and reasoning to generate a helpful, accurate, and student-friendly response.
-                                
+                    - Explains complex topics in a simple way        
                                 
                                 
                     ### Conversation So Far:
@@ -128,9 +134,7 @@ def generate_text(user_input,_chat_history_text,agent_type):
                     Respond in a way that fits your selected agent type (**{agent_type}**), while being helpful, accurate, and easy to understand. Use bullet points, math formatting, or code blocks when appropriate.
                         - If the question requires external knowledge (like real-time search, news, or facts),
                           use the available tools like `tavily_search` instead of answering from memory.
-                    ### reference link(if available):
-                        - give some top most source link for better research on this user query (highlight this link)
-                    """
+                   """
     
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash",
