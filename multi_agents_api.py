@@ -1,6 +1,8 @@
 import os
 import requests
+import openai
 from langchain.tools import tool
+from bs4 import BeautifulSoup
 
 @tool
 def github_top_repos(language: str = "python") -> str:
@@ -166,5 +168,61 @@ def wolframalpha_query(query: str) -> str:
         return f"🧠 WolframAlpha says: {response.text}"
     else:
         return f"❌ WolframAlpha API error: {response.status_code} — {response.text}"
+
+
+
+HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+def query_huggingface_model(payload, model="facebook/bart-large-cnn"):
+    """
+    Query a Hugging Face model like summarization, sentiment, etc.
+    Example models:
+    - facebook/bart-large-cnn (summarization)
+    - distilbert-base-uncased-finetuned-sst-2-english (sentiment)
+    """
+    headers = {
+        "Authorization": f"Bearer {HF_API_KEY}"
+    }
+    API_URL = f"https://api-inference.huggingface.co/models/{model}"
+    response = requests.post(API_URL, headers=headers, json=payload)
+    
+    if response.status_code != 200:
+        return f"API Error: {response.status_code} - {response.text}"
+    
+    return response.json()
+
+@tool
+def summarize_text(text: str) -> str:
+    """
+    Uses Hugging Face BART model to summarize text input.
+    """
+    result = query_huggingface_model({"inputs": text}, model="facebook/bart-large-cnn")
+    return result[0]['summary_text']
+
+
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+def ask_openai(prompt, model="gpt-4"):
+    """
+    Sends a prompt to OpenAI's GPT model and returns the response.
+    """
+    try:
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
+
+@tool
+def explain_ai_topic(query: str) -> str:
+    """
+    Uses OpenAI GPT to explain any AI/ML/Data Science topic in simple terms.
+    """
+    return ask_openai(f"Explain this in a beginner-friendly way:\n{query}")
 
 

@@ -11,7 +11,7 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.tools import ArxivQueryRun
 from langchain_community.utilities.arxiv import ArxivAPIWrapper
 
-from multi_agents_api import github_top_repos,stackoverflow_search,search_protein_info,get_gene_info,get_global_covid_stats,openfda_drug_info,wolframalpha_query
+from multi_agents_api import github_top_repos,stackoverflow_search,search_protein_info,get_gene_info,get_global_covid_stats,openfda_drug_info,wolframalpha_query,summarize_text,explain_ai_topic
 load_dotenv()
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
@@ -64,16 +64,15 @@ def get_tools_for_agent(agent_type):
         "💻 Computer Science Researcher",
         "🔐 Cybersecurity Advisor",
         "☁️ Cloud Computing Assistant",
-        "🤖 Artificial Intelligence Specialist",
-        "📊 Data Science Analyst",
         "🌐 Web Development Guide",
         "📱 Mobile App Development Tutor",
-        "🧬 Machine Learning Engineer",
         "🛠️ DevOps & Automation Consultant",
         "🔎 Computer Vision Expert",
         "🎮 Game Development Mentor"
     ]:
         return [tavily_search,arxiv_search]
+    
+
     if agent_type in ["🧑‍💻 Algorithms & Data Structures Tutor",
                       "🖥️ Software Development Mentor"]:
         return [github_top_repos,stackoverflow_search]
@@ -90,7 +89,12 @@ def get_tools_for_agent(agent_type):
         "📐 Geometry & Trigonometry Assistant",
         "🧮 Statistics & Probability Helper"
     ]:
-        return [wolframalpha_query,tavily_search]  # Or replace with solve_math_expression if you want real math solving
+        return [wolframalpha_query,tavily_search]  
+    
+    if agent_type in ["🤖 Artificial Intelligence Specialist", 
+                      "🧬 Machine Learning Engineer", 
+                      "📊 Data Science Analyst"]:
+        return [summarize_text,explain_ai_topic,arxiv_search]
 
     # Default (no tool needed)
     return []

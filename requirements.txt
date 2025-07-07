@@ -49,3 +49,4 @@ google-generativeai
 PyMuPDF
 arxiv
 validators
+openai
